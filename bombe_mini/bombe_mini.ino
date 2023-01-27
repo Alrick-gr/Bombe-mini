@@ -10,8 +10,6 @@ uint8_t combinaison[4] = {12, 12, 12, 12};
 bool code_mode = true;
 
 
-
-
 uint8_t pinA = 11;
 uint8_t pinB = 7;
 uint8_t pinC = 4;
@@ -41,6 +39,8 @@ void setup() {
 
   pinMode(BouttonRouge, INPUT);
   annimation();
+  menu();
+  /*
   if (digitalRead(BouttonRouge))
   {
     tone(Buzzer, 3000, 500);
@@ -50,9 +50,9 @@ void setup() {
     tone(Buzzer, 3000, 500);
     delay(1000);
   }
-
+*/
   Serial.begin(9600);
-  recupTemps();
+  //recupTemps();
 }
 void loop()
 {
@@ -96,9 +96,11 @@ void loop()
 void menu()
 {
   uint8_t mode = 0;
+  uint16_t temps = 0;
+  uint8_t codeJeu[4] = {-3, -3, -3, -3};
   while(!digitalRead(BouttonRouge))
   {
-    mode = map(analogRead(A0), 0, 1023, 0, NbrModes-1);
+    mode = map(analogRead(A0), 0, 1023, 0, NbrModes);
     affichage2(-3,-3,-3,mode);
   }
   while(digitalRead(BouttonRouge));
@@ -107,10 +109,13 @@ void menu()
   {
     case 0:
     default:
-      _recupTemps();
-      _code(combinaison);
+      temps = _recupTemps();
+      _code(codeJeu);
+      bombeCode(temps, codeJeu);
       break;
     case 1:
+      temps = _recupTemps();
+      bombeCode(temps, codeJeu);
       break;
   }
 }
@@ -214,7 +219,7 @@ void code(bool partie)
 
       if (var)
       {
-        desam();
+        desam(tempsMin, tempsSec);
       }
       else
       {
@@ -227,7 +232,7 @@ void code(bool partie)
 
   else
   {
-    if (frequence()) desam();
+    if (frequence()) desam(tempsMin, tempsSec);
   }
 
   /*
@@ -331,7 +336,7 @@ void explosion()
     recupTemps();*/
 }
 
-void desam()
+void desam(uint8_t tempsMin, uint8_t tempsSec)
 {
   digitalWrite(D1, LOW);
   digitalWrite(D2, LOW);
