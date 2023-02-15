@@ -2,12 +2,8 @@
 #define BouttonRouge 13
 #define BouttonJaune A2
 
-#define NbrModes 2
+#define NbrModes 3
 
-int tempsMin, tempsSec, tempsI, OldTime, essais = 0;
-unsigned long temps, dT = 0;
-uint8_t combinaison[4] = {12, 12, 12, 12};
-bool code_mode = true;
 
 
 uint8_t pinA = 11;
@@ -23,6 +19,8 @@ uint8_t D3   = 8;
 uint8_t D4   = 2;
 
 void setup() {
+  
+  Serial.begin(9600);
   // initialize the digital pins as outputs.
   randomSeed(analogRead(A6));
   pinMode(pinA, OUTPUT);
@@ -40,225 +38,48 @@ void setup() {
   pinMode(BouttonRouge, INPUT);
   annimation();
   menu();
-  /*
-  if (digitalRead(BouttonRouge))
-  {
-    tone(Buzzer, 3000, 500);
-    code_mode = false;
-    combinaison[3] = 1;
-    delay(1000);
-    tone(Buzzer, 3000, 500);
-    delay(1000);
-  }
-*/
-  Serial.begin(9600);
-  //recupTemps();
 }
 void loop()
 {
-  temps = millis() - dT;
-  tempsMin = (tempsI - temps / 1000) / 60;
-  tempsSec = (tempsI - temps / 1000) % 60;
 
-  if (tempsSec != OldTime)
-  {
-    OldTime = tempsSec;
-    tone(Buzzer, 2500, 100);
-  }
-
-  if ((tempsMin == 0 && tempsSec == 0))
-  {
-    explosion();
-  }
-
-  if (essais == 3)
-  {
-    explosion();
-  }
-  if (analogRead(BouttonJaune) < 400)
-  {
-    essais++;
-    code(true);
-  }
-
-  affichage(tempsMin, tempsSec);
-  /*
-    Serial.print("minutes : ");
-    Serial.print(tempsMin);
-
-    Serial.print(" temps : ");
-    Serial.print(temps);
-
-    Serial.print(" secondes : ");
-    Serial.println(tempsSec);*/
 }
 
 void menu()
 {
-  uint8_t mode = 0;
-  uint16_t temps = 0;
-  uint8_t codeJeu[4] = {-3, -3, -3, -3};
-  while(!digitalRead(BouttonRouge))
+  uint8_t mode;
+  int8_t codeJeu[4] = {-3, -3, -3, -3};
+  while(!pressed(BouttonRouge))
   {
     mode = map(analogRead(A0), 0, 1023, 0, NbrModes);
     affichage2(-3,-3,-3,mode);
   }
-  while(digitalRead(BouttonRouge));
+  while(pressed(BouttonRouge));
   
   switch(mode)
   {
     case 0:
     default:
-      temps = _recupTemps();
-      _code(codeJeu);
-      bombeCode(temps, codeJeu);
+      param_bombeCode();
       break;
     case 1:
-      temps = _recupTemps();
-      bombeCode(temps, codeJeu);
+      param_bombeFreq();
+      break;
+    case 2:
+      param_bombeNum();
       break;
   }
 }
-/*
-  void gameCapture()
-  {
-
-  }
-*/
-
-
-void code(bool partie)
-{
-  if (code_mode)
-  {
-    digitalWrite(D1, LOW);
-    digitalWrite(D2, LOW);
-    digitalWrite(D3, LOW);
-    digitalWrite(D4, LOW);
-
-    int entre[] = {12, 12, 12, 12};
-
-    delay(500);
-    for (int i = 0; i <= 3; i++)
-    {
-      Serial.println(combinaison[0] - 2);
-      while (digitalRead(BouttonRouge) or analogRead(BouttonJaune) < 100);
-      while (!digitalRead(BouttonRouge) && analogRead(BouttonJaune) > 100)
-      {
-        switch (i)
-        {
-          case (3):
-            digitalWrite(D1, LOW);
-            digitalWrite(D2, LOW);
-            digitalWrite(D3, LOW);
-            digitalWrite(D4, HIGH);
-            if (!partie)numero(combinaison[3] - 2);
-            else numero(entre[3] - 2);
-            delay(5);
-
-          case (2):
-            digitalWrite(D1, LOW);
-            digitalWrite(D2, LOW);
-            digitalWrite(D3, HIGH);
-            digitalWrite(D4, LOW);
-            if (!partie)numero(combinaison[2] - 2);
-            else numero(entre[2] - 2);
-            delay(5);
-
-          case (1):
-            digitalWrite(D1, LOW);
-            digitalWrite(D2, HIGH);
-            digitalWrite(D3, LOW);
-            digitalWrite(D4, LOW);
-            if (!partie)numero(combinaison[1] - 2);
-            else numero(entre[1] - 2);
-            delay(5);
-
-          case (0):
-            digitalWrite(D1, HIGH);
-            digitalWrite(D2, LOW);
-            digitalWrite(D3, LOW);
-            digitalWrite(D4, LOW);
-            if (!partie)numero(combinaison[0] - 2);
-            else numero(entre[0] - 2);
-            delay(5);
-            break;
-
-
-        }
-      }
-
-      if (digitalRead(BouttonRouge))
-      {
-        if (!partie)combinaison[i] = 0;
-        entre[i] = 0;
-        tone(Buzzer, 4000, 50);
-      }
-
-      if (analogRead(BouttonJaune) < 100)
-      {
-        if (!partie)combinaison[i] = 1;
-        entre[i] = 1;
-        tone(Buzzer, 4000, 50);
-      }
-      delay(250);
-    }
-
-    if (partie)
-    {
-
-      bool var = true;
-
-      for (int i = 0; i <= 3; i++)
-      {
-        if (entre[i] != combinaison[i])
-        {
-          var = false;
-        }
-      }
-
-      if (var)
-      {
-        desam(tempsMin, tempsSec);
-      }
-      else
-      {
-        tone(Buzzer, 2000, 500);
-        delay(500);
-      }
-    }
-
-  }
-
-  else
-  {
-    if (frequence()) desam(tempsMin, tempsSec);
-  }
-
-  /*
-    Serial.println(combinaison[0]);
-    Serial.println(combinaison[1]);
-    Serial.println(combinaison[2]);
-    Serial.println(combinaison[3]);*/
-
-}
-
 
 bool frequence()
 {
-  int freq = random(105, 4700);
-  int freq_pot = map(analogRead(A0), 0, 1023, 100, 4800);
-  int sensi = 50;
-  int delta;
-  while (!digitalRead(BouttonRouge))
+  uint16_t freq = random(105, 4700);
+  uint16_t freq_pot = map(analogRead(A0), 0, 1023, 100, 4800);
+  uint8_t sensi = 50;
+  uint16_t delta;
+  while (!pressed(BouttonJaune))
   {
     tone(Buzzer, freq_pot);
     freq_pot = map(analogRead(A0), 0, 1023, 100, 4800);
-    Serial.print(delta);
-    Serial.print("    ");
-    Serial.print(freq);
-    Serial.print("    ");
-    Serial.println(freq_pot);
 
     if (freq_pot >= freq)
     {
@@ -280,17 +101,17 @@ bool frequence()
 
 void explosion()
 {
-  for (int i = 1; i <= 7; i++)
+  for (uint8_t i = 1; i <= 7; i++)
   {
     tone(Buzzer, 1000 * i, 75);
     delay(100);
   }
   tone(Buzzer, 7000, 1000);
-  int f_min = 1000;
-  int f_max = 3000;
-  int f = f_min;
+  uint16_t f_min = 1000;
+  uint16_t f_max = 3000;
+  uint16_t f = f_min;
   bool flag_f = true;
-  while (!digitalRead(BouttonRouge))
+  while (!pressed(BouttonRouge))
   {
     if (flag_f)f += 10;
     else f -= 100;
@@ -313,7 +134,7 @@ void explosion()
     digitalWrite(pinF, random(2));
     digitalWrite(pinG, random(2));
   }
-  while (digitalRead(BouttonRouge))
+  while (pressed(BouttonRouge))
   {
 
     digitalWrite(D1, 0);
@@ -331,9 +152,6 @@ void explosion()
   }
   delay(500);
   asm volatile ("  jmp 0");
-  /*
-    tempsMin, tempsSec,tempsI,OldTime, essais = 0;
-    recupTemps();*/
 }
 
 void desam(uint8_t tempsMin, uint8_t tempsSec)
@@ -347,7 +165,7 @@ void desam(uint8_t tempsMin, uint8_t tempsSec)
   delay(500);
   tone(Buzzer, 3000, 100);
   delay(1000);
-  while (!digitalRead(BouttonRouge))
+  while (!pressed(BouttonRouge))
   {
     if ((millis() / 500 % 2 ))
     {

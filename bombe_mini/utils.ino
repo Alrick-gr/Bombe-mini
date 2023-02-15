@@ -172,67 +172,16 @@ void affichage2(int8_t Seg1, int8_t Seg2, int8_t Seg3, int8_t Seg4)
 
 }
 
-void recupTemps()
-{
-  bool flagJ = false;
-  int n = 0;
-  while (!digitalRead(BouttonRouge) || combinaison[3] == 12)
-  {
-    Serial.println(analogRead(BouttonJaune));
-    tempsMin = map(analogRead(A0), 0, 1023, 0, 60);
-    tempsI = tempsMin * 60;
-
-    if (tempsMin != OldTime)
-    {
-      OldTime = tempsMin;
-      tone(Buzzer, 4000, 10);
-    }
-    if (analogRead(BouttonJaune) > 100)
-    {
-      flagJ = true;
-      //n++;
-    }
-
-    if (n == 200)
-    {
-      n = 0;
-      modeCapture();
-    }
-
-
-    if (analogRead(BouttonJaune) <= 100 && flagJ)
-    {
-      if(code_mode)code(false);
-      else frequence();
-      while(digitalRead(BouttonRouge));
-      flagJ = false;
-      n = 0;
-    }
-    affichage(tempsMin, 0);
-
-    if (digitalRead(BouttonRouge) && combinaison[3] == 12)
-    {
-      tone(Buzzer, 500, 100);
-    }
-
-    //Serial.println(digitalRead(BouttonRouge));
-    //Serial.println(analogRead(BouttonJaune));
-    //Serial.println(n);
-  }
-  dT = millis();
-
-  Serial.print(digitalRead(BouttonRouge));
-  Serial.println(combinaison[3]);
-
-}
 
 uint16_t _recupTemps()
 {
-  uint16_t tempsSecondes;
+  uint16_t tempsMin, tempsSecondes, OldTime;
+  uint16_t ;
+  while (digitalRead(BouttonRouge));
   while (!digitalRead(BouttonRouge))
   {
     tempsMin = map(analogRead(A0), 0, 1023, 0, 60);
-    uint16_t tempsSecondes = tempsMin * 60;
+    tempsSecondes = tempsMin * 60;
 
     if (tempsMin != OldTime)
     {
@@ -246,27 +195,74 @@ uint16_t _recupTemps()
 }
 
 
-void _code(int8_t* nbr)
+void code(int8_t* nbr)
 {
-  numero(-3);
+  //numero(-3);
   uint8_t index = 0;
-  for(uint8_t i = 1; i<=3; i++)nbr[i] = -3;
+  for(uint8_t i = 0; i<4; i++)nbr[i] = -3;
   
-  while (!digitalRead(BouttonRouge))
+  while(pressed(BouttonRouge));
+  while (nbr[3] == -3)
   {
-    if (digitalRead(BouttonRouge))
+    
+    if (pressed(BouttonRouge))
     {
+      
       nbr[index] = -1;
       tone(Buzzer, 4000, 50);
-      while(digitalRead(BouttonRouge));
+      while(pressed(BouttonRouge));
       index++;
     }
-    else if (analogRead(BouttonJaune) < 100)
+    else if (pressed(BouttonJaune))
     {
+      //Serial.println(analogRead
       nbr[index] = -2;
       tone(Buzzer, 4000, 50);
       index++;
+      while(pressed(BouttonJaune));
     }
     affichage2(nbr[0], nbr[1], nbr[2], nbr[3]);
+  }
+}
+void codeNum(int8_t* nbr)
+{
+  uint8_t index = 0;
+  for(uint8_t i = 0; i<4; i++)nbr[i] = -3;
+  while(pressed(BouttonRouge));
+  while (nbr[3] == -3 || !pressed(BouttonJaune))
+  {
+    
+    nbr[index] = map(analogRead(A0), 0, 1023, 0, 9);
+    if (pressed(BouttonJaune))
+    {
+      tone(Buzzer, 4000, 50);
+      index++;
+      while(pressed(BouttonJaune));
+    }
+    affichage2(nbr[0], nbr[1], nbr[2], nbr[3]);
+  }
+}
+bool pressed(uint8_t btn)
+{
+  switch(btn)
+  {
+    default:
+    case(BouttonRouge):
+      if(digitalRead(BouttonRouge))
+        return true;
+      break;
+    case(BouttonJaune):
+      if(analogRead(BouttonJaune) < 250)
+        return true;
+      break;
+  }
+  return false;
+}
+
+void pressToStart()
+{
+  while(!pressed(BouttonRouge))
+  {
+    affichage2(8, 8, 8, 8);
   }
 }
