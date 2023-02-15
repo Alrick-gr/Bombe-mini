@@ -1,20 +1,21 @@
 void bombeCode(uint16_t tempsJeu, int8_t* codeJeu)
 {
-  uint16_t delta = millis()/100;
-  uint16_t temps = 0;
+  uint16_t delta = millis()/1000;
+  uint16_t temps, oldTemps = 0;
   uint8_t essais = 0;
   bool fin = false;
   int8_t entree[4] = {-3, -3, -3, -3,};
   uint8_t tempsMin, tempsSec;
   while(!fin)
   {
-    temps = (millis()/100) - delta;
-    tempsMin = (tempsJeu - temps / 10) / 60;
-    tempsSec = (tempsJeu - temps / 10) % 60;
+    temps = (millis()/1000) - delta;
+    tempsMin = (tempsJeu - temps) / 60;
+    tempsSec = (tempsJeu - temps) % 60;
 
     affichage(tempsMin, tempsSec);
-    if(temps%5)
+    if(oldTemps != temps)
     {
+      oldTemps = temps;
       tone(Buzzer, 2500, 100);
     }
     if(temps >= tempsJeu || essais == 3) explosion();

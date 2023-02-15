@@ -6,17 +6,17 @@
 
 
 
-uint8_t pinA = 11;
-uint8_t pinB = 7;
-uint8_t pinC = 4;
-uint8_t pinD = 5;
-uint8_t pinE = 6;
-uint8_t pinF = 10;
-uint8_t pinG = 3;
-uint8_t D1   = 12;
-uint8_t D2   = 9;
-uint8_t D3   = 8;
-uint8_t D4   = 2;
+const uint8_t pinA = 11;
+const uint8_t pinB = 7;
+const uint8_t pinC = 4;
+const uint8_t pinD = 5;
+const uint8_t pinE = 6;
+const uint8_t pinF = 10;
+const uint8_t pinG = 3;
+const uint8_t D1   = 12;
+const uint8_t D2   = 9;
+const uint8_t D3   = 8;
+const uint8_t D4   = 2;
 
 void setup() {
   
